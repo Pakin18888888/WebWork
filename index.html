@@ -2,10 +2,10 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- เพิ่ม viewport-fit=cover เพื่อให้เว็บคำนวณพื้นที่ปลอดภัย (Safe Area) บนมือถือ -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Pro Student Planner | Multi-User</title>
     
-    <!-- แก้ลิงก์ Tailwind และ FontAwesome ตรงนี้ให้ถูกต้อง -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -15,16 +15,17 @@
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
     
-    <!-- ดึงไฟล์ CSS ที่ตกแต่งความสวยงาม -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-950 text-gray-100 flex h-screen overflow-hidden font-prompt relative">
+<!-- เปลี่ยนจาก h-screen เป็น h-[100dvh] เพื่อไม่ให้เบราว์เซอร์บังขอบล่าง/บน -->
+<body class="bg-gray-950 text-gray-100 flex h-[100dvh] overflow-hidden font-prompt relative">
 
     <!-- ================= LOGIN SCREEN ================= -->
     <div id="loginScreen" class="absolute inset-0 bg-gray-950 z-50 flex items-center justify-center p-4 transition-opacity duration-500">
         <div class="bg-gray-900 border border-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md relative">
-            <button onclick="toggleLanguage()" class="absolute top-4 right-4 text-gray-400 hover:text-white bg-gray-800 px-3 py-1 rounded-lg text-sm transition font-bold" id="langBtnLogin">🇹🇭 TH</button>
-            <div class="text-center mb-8 mt-4">
+            <!-- ปรับระยะขอบปุ่มสลับภาษาให้หลบรอยบาก -->
+            <button onclick="toggleLanguage()" class="absolute top-[max(1rem,env(safe-area-inset-top))] right-4 text-gray-400 hover:text-white bg-gray-800 px-3 py-1 rounded-lg text-sm transition font-bold" id="langBtnLogin">🇹🇭 TH</button>
+            <div class="text-center mb-8 mt-6">
                 <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl font-bold shadow-lg shadow-indigo-500/30 mb-4">
                     <i class="fa-solid fa-code text-white"></i>
                 </div>
@@ -58,7 +59,8 @@
 
         <!-- Sidebar -->
         <aside id="sidebar" class="fixed md:static inset-y-0 left-0 w-72 bg-gray-950 border-r border-gray-800 flex flex-col z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl md:shadow-none">
-            <div class="p-6 border-b border-gray-800 flex items-center justify-between gap-4">
+            <!-- เพิ่ม env(safe-area-inset-top) เพื่อหลบรอยบากหน้าจอ -->
+            <div class="px-6 pb-6 pt-[max(1.5rem,env(safe-area-inset-top))] border-b border-gray-800 flex items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl font-bold">
                         <i class="fa-solid fa-code"></i>
@@ -71,7 +73,7 @@
                 <button onclick="toggleMobileMenu()" class="md:hidden text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <nav class="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar" id="sidebarNav"></nav>
-            <div class="p-4 border-t border-gray-800">
+            <div class="p-4 border-t border-gray-800 pb-[max(1rem,env(safe-area-inset-bottom))]">
                 <button onclick="logout()" class="w-full flex items-center justify-center gap-2 text-gray-400 hover:text-red-400 hover:bg-red-400/10 py-3 rounded-lg transition">
                     <i class="fa-solid fa-right-from-bracket"></i> <span data-i18n="logout">Logout</span>
                 </button>
@@ -79,8 +81,9 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col h-screen overflow-y-auto relative bg-gray-900 w-full">
-            <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
+        <main class="flex-1 flex flex-col h-full overflow-y-auto relative bg-gray-900 w-full">
+            <!-- อัปเกรด Header ดัน UI หลบรอยบาก (Notch) และเพิ่ม Z-index ให้ทับงานเวลาเลื่อนขึ้น -->
+            <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 px-4 pb-4 pt-[max(1rem,env(safe-area-inset-top))] md:p-6 flex justify-between items-center sticky top-0 z-20">
                 <div class="flex items-center gap-4">
                     <button onclick="toggleMobileMenu()" class="md:hidden text-gray-400 hover:text-white text-2xl transition transform hover:scale-110">
                         <i class="fa-solid fa-bars"></i>
@@ -95,7 +98,8 @@
                 </div>
             </header>
 
-            <div class="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 fade-in">
+            <!-- เพิ่ม Padding Bottom ให้เลื่อนดูงานแถวสุดท้ายได้สะดวกสุดๆ -->
+            <div class="p-4 md:p-6 lg:p-8 space-y-6 md:space-y-8 fade-in pb-24 md:pb-8">
                 <!-- Stats Row -->
                 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <div class="stat-card bg-gray-800 p-4 md:p-6 rounded-2xl border border-gray-700 relative overflow-hidden"><p class="text-gray-400 text-xs md:text-sm font-medium uppercase tracking-wider truncate" data-i18n="totalTasks">Total</p><h3 class="text-2xl md:text-4xl font-bold text-white mt-1 md:mt-2" id="statTotal">0</h3></div>
