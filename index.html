@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Year 3 Planner (Online)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
+
+        body {
+            font-family: 'Prompt', sans-serif;
+        }
+    </style>
+
+    <!-- Firebase SDK (Compat Version สำหรับ HTML ไฟล์เดียว) -->
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-indigo-600 text-white p-6 shadow-md flex justify-between items-center sticky top-0">
+        <h1 class="text-2xl font-bold"><i class="fa-solid fa-graduation-cap"></i> Year 3 Planner</h1>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-6 space-y-8 mt-4">
+        <!-- ฟอร์มเพิ่มข้อมูลลง Database -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold mb-4"><i class="fa-solid fa-plus text-indigo-500"></i> เพิ่มงานใหม่</h2>
+            <form id="taskForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input type="text" id="subject" placeholder="วิชา (เช่น GDM 330)"
+                    class="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required>
+                <input type="text" id="taskName" placeholder="ชื่องาน"
+                    class="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required>
+                <input type="date" id="dueDate"
+                    class="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required>
+                <button type="submit"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-bold transition">บันทึกงาน</button>
+            </form>
+        </div>
+
+        <!-- ตารางดึงข้อมูลจาก Database -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+            <div class="p-4 bg-slate-100 border-b font-bold"><i class="fa-solid fa-list-check text-slate-500"></i>
+                งานทั้งหมด (Real-time Sync)</div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-800 text-white text-sm">
+                        <tr>
+                            <th class="p-4">วิชา</th>
+                            <th class="p-4">ชื่องาน</th>
+                            <th class="p-4">วันส่ง</th>
+                            <th class="p-4 text-center">จัดการ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="taskList" class="divide-y divide-slate-100 text-sm">
+                        <!-- ข้อมูลจาก Firebase จะมาแสดงตรงนี้ -->
+                        <tr>
+                            <td colspan="4" class="p-4 text-center text-slate-400">กำลังโหลดข้อมูล...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // 1. นำ firebaseConfig จาก Firebase Console มาใส่ตรงนี้
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyAy7ghFc4cmHznswsGtmc2eVjioPe2Bgxs",
+            authDomain: "backend-4d0e8.firebaseapp.com",
+            projectId: "backend-4d0e8",
+            storageBucket: "backend-4d0e8.firebasestorage.app",
+            messagingSenderId: "537273772839",
+            appId: "1:537273772839:web:ab74ee71d4ab97e9235702",
+            measurementId: "G-JBHXKD4D59"
+        };
+
+        // 2. เริ่มต้นระบบ Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 3. ฟังก์ชันบันทึกข้อมูล (Create)
+        document.getElementById('taskForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const subject = document.getElementById('subject').value;
+            const taskName = document.getElementById('taskName').value;
+            const dueDate = document.getElementById('dueDate').value;
+
+            db.collection("tasks").add({
+                subject: subject,
+                taskName: taskName,
+                dueDate: dueDate,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('taskForm').reset();
+            }).catch((error) => console.error("Error:", error));
+        });
+
+        // 4. ฟังก์ชันดึงข้อมูลแบบ Real-time (Read & Sync)
+        db.collection("tasks").orderBy("dueDate", "asc").onSnapshot((querySnapshot) => {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = ''; // เคลียร์หน้าจอก่อน
+
+            if (querySnapshot.empty) {
+                taskList.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">ไม่มีงานค้าง เยี่ยมมาก!</td></tr>';
+                return;
+            }
+
+            querySnapshot.forEach((doc) => {
+                const task = doc.data();
+                taskList.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-4 font-bold text-slate-800">${task.subject}</td>
+                        <td class="p-4 text-slate-600">${task.taskName}</td>
+                        <td class="p-4 text-slate-600">${task.dueDate}</td>
+                        <td class="p-4 text-center">
+                            <button onclick="deleteTask('${doc.id}')" class="text-red-500 hover:text-red-700 px-3 py-1 rounded bg-red-50 hover:bg-red-100 transition">ลบ</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+
+        // 5. ฟังก์ชันลบข้อมูล (Delete)
+        function deleteTask(id) {
+            if (confirm("แน่ใจหรือไม่ว่างานนี้เสร็จแล้ว/ต้องการลบ?")) {
+                db.collection("tasks").doc(id).delete();
+            }
+        }
+    </script>
+</body>
+
+</html>
