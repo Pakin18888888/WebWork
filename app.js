@@ -213,9 +213,12 @@ function filterBySubject(subjectCode, element) {
         element.classList.add('bg-gray-800', 'text-white', 'border', 'border-gray-700', 'font-bold');
     }
     
-    // ถ้าดูผ่านมือถือ พอกดเลือกวิชาเสร็จ ให้ปิดเมนูอัตโนมัติ
+    // ปิดเมนูบนมือถืออัตโนมัติเมื่อเลือกวิชา
     if(window.innerWidth < 768) {
-        toggleMobileMenu();
+        const sidebar = document.getElementById('sidebar');
+        if(!sidebar.classList.contains('-translate-x-full')) {
+            toggleMobileMenu();
+        }
     }
     
     renderApp();

@@ -4,15 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pro Student Planner | Multi-User</title>
-    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
-    <link href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css)" rel="stylesheet">
-    <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
+    
+    <!-- แก้ลิงก์ Tailwind และ FontAwesome ตรงนี้ให้ถูกต้อง -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Firebase SDKs -->
-    <script src="[https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js](https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js)"></script>
-    <script src="[https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js](https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js)"></script>
-    <script src="[https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js](https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js)"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
     
+    <!-- ดึงไฟล์ CSS ที่ตกแต่งความสวยงาม -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-gray-950 text-gray-100 flex h-screen overflow-hidden font-prompt relative">
@@ -50,10 +53,10 @@
     <!-- ================= MAIN APP ================= -->
     <div id="mainApp" class="w-full h-full flex hidden opacity-0 transition-opacity duration-500 relative">
         
-        <!-- Mobile Overlay (ฉากหลังเบลอเวลากดเมนูมือถือ) -->
+        <!-- Mobile Overlay -->
         <div id="mobileOverlay" onclick="toggleMobileMenu()" class="fixed inset-0 bg-gray-950/80 backdrop-blur-sm z-30 hidden opacity-0 transition-opacity duration-300 md:hidden"></div>
 
-        <!-- Sidebar (อัปเดตให้สไลด์บนมือถือได้) -->
+        <!-- Sidebar -->
         <aside id="sidebar" class="fixed md:static inset-y-0 left-0 w-72 bg-gray-950 border-r border-gray-800 flex flex-col z-40 transform -translate-x-full md:translate-x-0 transition-transform duration-300 shadow-2xl md:shadow-none">
             <div class="p-6 border-b border-gray-800 flex items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
@@ -65,7 +68,6 @@
                         <p class="text-xs text-gray-500 truncate w-32" id="userDisplay">User</p>
                     </div>
                 </div>
-                <!-- ปุ่มปิดเมนูบนมือถือ -->
                 <button onclick="toggleMobileMenu()" class="md:hidden text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             </div>
             <nav class="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar" id="sidebarNav"></nav>
@@ -80,7 +82,6 @@
         <main class="flex-1 flex flex-col h-screen overflow-y-auto relative bg-gray-900 w-full">
             <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 p-4 md:p-6 flex justify-between items-center sticky top-0 z-10">
                 <div class="flex items-center gap-4">
-                    <!-- Hamburger Menu สำหรับมือถือ -->
                     <button onclick="toggleMobileMenu()" class="md:hidden text-gray-400 hover:text-white text-2xl transition transform hover:scale-110">
                         <i class="fa-solid fa-bars"></i>
                     </button>
@@ -106,7 +107,6 @@
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
                     <div class="lg:col-span-2 bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden flex flex-col">
                         <div class="p-4 md:p-5 border-b border-gray-700 bg-gray-800/50 flex justify-between items-center"><h3 class="text-base md:text-lg font-bold"><i class="fa-solid fa-list-check text-indigo-400 mr-2"></i> <span data-i18n="activeWorkload">Active Workload</span></h3></div>
-                        <!-- ตารางเลื่อนซ้ายขวาได้บนมือถือ (overflow-x-auto) -->
                         <div class="overflow-x-auto flex-1 custom-scrollbar">
                             <table class="w-full text-left border-collapse min-w-[600px]">
                                 <thead><tr class="bg-gray-950 text-gray-400 text-xs uppercase tracking-wider"><th class="p-4" data-i18n="subject">Subject</th><th class="p-4" data-i18n="task">Task</th><th class="p-4" data-i18n="deadline">Deadline</th><th class="p-4 text-center" data-i18n="status">Status</th><th class="p-4 text-center" data-i18n="action">Action</th></tr></thead>
@@ -123,7 +123,7 @@
         </main>
     </div>
 
-    <!-- Modal (Popup สร้างงาน ปรับให้พอดีมือถือ) -->
+    <!-- Modal (Popup สร้างงาน) -->
     <div id="taskModal" class="fixed inset-0 bg-gray-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300 p-4">
         <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
             <div class="flex justify-between items-center mb-6"><h3 class="text-lg md:text-xl font-bold text-white" data-i18n="modalTitle">Create New Task</h3><button onclick="toggleModal(false)" class="text-gray-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button></div>
