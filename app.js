@@ -14,26 +14,44 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+// ================= ระบบเมนูมือถือ (Mobile Sidebar) =================
+function toggleMobileMenu() {
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobileOverlay');
+
+    if (sidebar.classList.contains('-translate-x-full')) {
+        // เปิดเมนู
+        sidebar.classList.remove('-translate-x-full');
+        overlay.classList.remove('hidden');
+        setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+    } else {
+        // ปิดเมนู
+        sidebar.classList.add('-translate-x-full');
+        overlay.classList.add('opacity-0');
+        setTimeout(() => overlay.classList.add('hidden'), 300);
+    }
+}
+
 // ================= ระบบแปลภาษา (i18n) =================
 const dict = {
     en: {
         loginSubtitle: "Sign in to manage your workspace",
         email: "Email", password: "Password", loginBtn: "Login", registerBtn: "Register",
         overview: "Overview", newTask: "New Task",
-        totalTasks: "Total Tasks", pending: "Pending", urgent: "Urgent", completed: "Completed",
+        totalTasks: "Total", pending: "Pending", urgent: "Urgent", completed: "Done",
         activeWorkload: "Active Workload", chartTitle: "Tasks by Subject", logout: "Logout",
         subject: "Subject", task: "Task", deadline: "Deadline", status: "Status", action: "Action",
         modalTitle: "Create New Task", taskName: "Task Name", priority: "Priority",
         optNormal: "🟢 Normal", optUrgent: "🔴 Urgent", btnSave: "Save Task",
         allTasks: "All Tasks", emptyTasks: "No tasks found. Enjoy your free time! 🎮",
         statusDone: "Done", statusPending: "Pending", confirmDelete: "Are you sure you want to delete this task?",
-        langBtn: "🇹🇭 TH" // ปุ่มแสดงภาษาตรงข้ามเพื่อให้กดสลับ
+        langBtn: "🇹🇭 TH" 
     },
     th: {
         loginSubtitle: "เข้าสู่ระบบเพื่อจัดการตารางงานของคุณ",
         email: "อีเมล", password: "รหัสผ่าน", loginBtn: "เข้าสู่ระบบ", registerBtn: "สมัครสมาชิก",
         overview: "ภาพรวม", newTask: "เพิ่มงานใหม่",
-        totalTasks: "งานทั้งหมด", pending: "งานค้าง", urgent: "งานด่วน", completed: "ส่งแล้ว",
+        totalTasks: "ทั้งหมด", pending: "งานค้าง", urgent: "งานด่วน", completed: "ส่งแล้ว",
         activeWorkload: "ตารางงานปัจจุบัน", chartTitle: "สัดส่วนงานแต่ละวิชา", logout: "ออกจากระบบ",
         subject: "รายวิชา", task: "ชื่องาน", deadline: "วันส่ง", status: "สถานะ", action: "จัดการ",
         modalTitle: "สร้างงานใหม่", taskName: "ชื่องาน", priority: "ความสำคัญ",
@@ -194,6 +212,12 @@ function filterBySubject(subjectCode, element) {
         element.classList.remove('text-gray-400');
         element.classList.add('bg-gray-800', 'text-white', 'border', 'border-gray-700', 'font-bold');
     }
+    
+    // ถ้าดูผ่านมือถือ พอกดเลือกวิชาเสร็จ ให้ปิดเมนูอัตโนมัติ
+    if(window.innerWidth < 768) {
+        toggleMobileMenu();
+    }
+    
     renderApp();
 }
 
@@ -228,10 +252,10 @@ function renderApp() {
         const row = document.createElement('tr');
         row.className = isDone ? 'opacity-50 hover:bg-gray-800/50 transition' : 'hover:bg-gray-800/80 transition';
         row.innerHTML = `
-            <td class="p-4 font-bold ${isDone ? 'line-through text-gray-500' : 'text-indigo-300'}">${t.subject}</td>
-            <td class="p-4 ${isDone ? 'line-through text-gray-500' : 'text-gray-200'}">
+            <td class="p-4 font-bold ${isDone ? 'line-through text-gray-500' : 'text-indigo-300'} whitespace-nowrap">${t.subject}</td>
+            <td class="p-4 ${isDone ? 'line-through text-gray-500' : 'text-gray-200'} min-w-[200px]">
                 ${t.task}
-                ${t.priority === 'Urgent' && !isDone ? `<span class="ml-2 text-xs text-red-400 bg-red-400/10 px-2 py-0.5 rounded border border-red-400/20">🔥 ${dict[currentLang].optUrgent.replace('🔴 ', '')}</span>` : ''}
+                ${t.priority === 'Urgent' && !isDone ? `<span class="ml-2 text-xs text-red-400 bg-red-400/10 px-2 py-0.5 rounded border border-red-400/20 whitespace-nowrap">🔥 ${dict[currentLang].optUrgent.replace('🔴 ', '')}</span>` : ''}
             </td>
             <td class="p-4 text-gray-400 whitespace-nowrap"><i class="fa-regular fa-calendar mr-2"></i>${t.date}</td>
             <td class="p-4 text-center">
