@@ -44,28 +44,25 @@ const dict = {
     }
 };
 
-let currentLang = localStorage.getItem('appLang') || 'en'; // ค่าเริ่มต้นเป็นภาษาอังกฤษ
+let currentLang = localStorage.getItem('appLang') || 'en'; 
 
 function applyLanguage() {
-    // 1. เปลี่ยนข้อความในแท็กที่มี data-i18n
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (dict[currentLang][key]) {
             el.innerText = dict[currentLang][key];
         }
     });
-    // 2. เปลี่ยนข้อความบนปุ่มสลับภาษา
     document.getElementById('langBtnLogin').innerText = dict[currentLang].langBtn;
     document.getElementById('langBtnMain').innerText = dict[currentLang].langBtn;
     
-    // 3. สั่งวาดหน้าจอใหม่ (เพื่อแปลข้อความในตารางและ Sidebar)
     initSubjects();
     if(currentUser) renderApp(); 
 }
 
 function toggleLanguage() {
     currentLang = currentLang === 'en' ? 'th' : 'en';
-    localStorage.setItem('appLang', currentLang); // จำค่าไว้ในเครื่อง
+    localStorage.setItem('appLang', currentLang); 
     applyLanguage();
 }
 
@@ -83,7 +80,7 @@ let currentUser = null;
 
 // ================= เริ่มทำงาน =================
 document.addEventListener('DOMContentLoaded', () => {
-    applyLanguage(); // โหลดภาษาตอนเปิดหน้าเว็บ
+    applyLanguage(); 
 });
 
 auth.onAuthStateChanged((user) => {
@@ -163,7 +160,6 @@ function initSubjects() {
     const select = document.getElementById('inputSubject');
     const sidebar = document.getElementById('sidebarNav');
     
-    // เคลียร์ค่าเดิมก่อนวาดใหม่ (ป้องกันการวาดซ้ำตอนกดเปลี่ยนภาษา)
     select.innerHTML = '';
     sidebar.innerHTML = `
         <a href="#" onclick="filterBySubject(null, this)" class="sidebar-item flex items-center gap-3 text-white bg-gray-800 border border-gray-700 px-4 py-3 rounded-xl transition group font-bold">
@@ -245,7 +241,8 @@ function renderApp() {
             </td>
             <td class="p-4 text-center">
                 <button onclick="deleteTask('${t.id}')" class="text-gray-500 hover:text-red-400 transition-colors"><i class="fa-solid fa-trash"></i></button>
-            </td>`;
+            </td>
+        `;
         tbody.appendChild(row);
     });
 
