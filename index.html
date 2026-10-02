@@ -1,138 +1,144 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Year 3 Planner (Online)</title>
+    <title>Pro Student Planner | Year 3</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap');
-
-        body {
-            font-family: 'Prompt', sans-serif;
-        }
-    </style>
-
-    <!-- Firebase SDK (Compat Version สำหรับ HTML ไฟล์เดียว) -->
-    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore-compat.js"></script>
+    <!-- FontAwesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
 </head>
+<body class="bg-gray-900 text-gray-100 flex h-screen overflow-hidden font-prompt">
 
-<body class="bg-slate-50 text-slate-800">
-
-    <header class="bg-indigo-600 text-white p-6 shadow-md flex justify-between items-center sticky top-0">
-        <h1 class="text-2xl font-bold"><i class="fa-solid fa-graduation-cap"></i> Year 3 Planner</h1>
-    </header>
-
-    <main class="max-w-4xl mx-auto p-6 space-y-8 mt-4">
-        <!-- ฟอร์มเพิ่มข้อมูลลง Database -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-bold mb-4"><i class="fa-solid fa-plus text-indigo-500"></i> เพิ่มงานใหม่</h2>
-            <form id="taskForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <input type="text" id="subject" placeholder="วิชา (เช่น GDM 330)"
-                    class="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required>
-                <input type="text" id="taskName" placeholder="ชื่องาน"
-                    class="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required>
-                <input type="date" id="dueDate"
-                    class="border p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" required>
-                <button type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg font-bold transition">บันทึกงาน</button>
-            </form>
+    <!-- Sidebar -->
+    <aside class="w-72 bg-gray-950 border-r border-gray-800 flex flex-col hidden md:flex z-20">
+        <div class="p-6 border-b border-gray-800 flex items-center gap-4">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl font-bold shadow-lg shadow-indigo-500/30">
+                <i class="fa-solid fa-code"></i>
+            </div>
+            <div>
+                <h1 class="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-purple-400">DEV PLANNER</h1>
+                <p class="text-xs text-gray-500">Year 3 Dashboard</p>
+            </div>
         </div>
+        <nav class="flex-1 p-4 space-y-2 overflow-y-auto" id="sidebarNav">
+            <!-- Sidebar Items จะถูกสร้างด้วย JS -->
+        </nav>
+    </aside>
 
-        <!-- ตารางดึงข้อมูลจาก Database -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="p-4 bg-slate-100 border-b font-bold"><i class="fa-solid fa-list-check text-slate-500"></i>
-                งานทั้งหมด (Real-time Sync)</div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-800 text-white text-sm">
-                        <tr>
-                            <th class="p-4">วิชา</th>
-                            <th class="p-4">ชื่องาน</th>
-                            <th class="p-4">วันส่ง</th>
-                            <th class="p-4 text-center">จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="taskList" class="divide-y divide-slate-100 text-sm">
-                        <!-- ข้อมูลจาก Firebase จะมาแสดงตรงนี้ -->
-                        <tr>
-                            <td colspan="4" class="p-4 text-center text-slate-400">กำลังโหลดข้อมูล...</td>
-                        </tr>
-                    </tbody>
-                </table>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-y-auto relative">
+        <!-- Header -->
+        <header class="bg-gray-900/80 backdrop-blur-md border-b border-gray-800 p-6 flex justify-between items-center sticky top-0 z-10">
+            <h2 class="text-2xl font-bold tracking-wide">Overview</h2>
+            <button onclick="toggleModal(true)" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-lg font-medium shadow-lg shadow-indigo-600/20 transition-all flex items-center gap-2 transform hover:scale-105">
+                <i class="fa-solid fa-plus"></i> New Task
+            </button>
+        </header>
+
+        <div class="p-6 md:p-8 space-y-8 fade-in">
+            <!-- Stats Row -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="stat-card bg-gray-800 p-6 rounded-2xl border border-gray-700 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl"><i class="fa-solid fa-layer-group"></i></div>
+                    <p class="text-gray-400 text-sm font-medium uppercase tracking-wider">Total Tasks</p>
+                    <h3 class="text-4xl font-bold text-white mt-2" id="statTotal">0</h3>
+                </div>
+                <div class="stat-card bg-gray-800 p-6 rounded-2xl border border-gray-700 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl text-amber-500"><i class="fa-solid fa-clock"></i></div>
+                    <p class="text-amber-400 text-sm font-medium uppercase tracking-wider">Pending</p>
+                    <h3 class="text-4xl font-bold text-white mt-2" id="statPending">0</h3>
+                </div>
+                <div class="stat-card bg-gray-800 p-6 rounded-2xl border border-red-900/50 relative overflow-hidden shadow-[0_0_15px_rgba(220,38,38,0.1)]">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl text-red-500"><i class="fa-solid fa-fire"></i></div>
+                    <p class="text-red-400 text-sm font-medium uppercase tracking-wider">Urgent</p>
+                    <h3 class="text-4xl font-bold text-white mt-2" id="statUrgent">0</h3>
+                </div>
+                <div class="stat-card bg-gray-800 p-6 rounded-2xl border border-gray-700 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 text-6xl text-emerald-500"><i class="fa-solid fa-check-double"></i></div>
+                    <p class="text-emerald-400 text-sm font-medium uppercase tracking-wider">Completed</p>
+                    <h3 class="text-4xl font-bold text-white mt-2" id="statDone">0</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Data Table -->
+                <div class="lg:col-span-2 bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden flex flex-col">
+                    <div class="p-5 border-b border-gray-700 flex justify-between items-center bg-gray-800/50">
+                        <h3 class="text-lg font-bold"><i class="fa-solid fa-list-check text-indigo-400 mr-2"></i> Active Workload</h3>
+                    </div>
+                    <div class="overflow-x-auto flex-1 custom-scrollbar">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-950 text-gray-400 text-xs uppercase tracking-wider">
+                                    <th class="p-4 font-medium">Subject</th>
+                                    <th class="p-4 font-medium">Task</th>
+                                    <th class="p-4 font-medium">Deadline</th>
+                                    <th class="p-4 font-medium text-center">Status</th>
+                                    <th class="p-4 font-medium text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="taskTableBody" class="text-sm divide-y divide-gray-700/50">
+                                <!-- JS จะสร้างแถวตารางที่นี่ -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Chart Section -->
+                <div class="bg-gray-800 rounded-2xl border border-gray-700 p-6 flex flex-col items-center justify-center">
+                    <h3 class="text-lg font-bold self-start w-full mb-4"><i class="fa-solid fa-chart-pie text-purple-400 mr-2"></i> Tasks by Subject</h3>
+                    <div class="w-full max-w-[250px] relative">
+                        <canvas id="subjectChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </main>
 
-    <script>
-        // 1. นำ firebaseConfig จาก Firebase Console มาใส่ตรงนี้
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-        const firebaseConfig = {
-            apiKey: "AIzaSyAy7ghFc4cmHznswsGtmc2eVjioPe2Bgxs",
-            authDomain: "backend-4d0e8.firebaseapp.com",
-            projectId: "backend-4d0e8",
-            storageBucket: "backend-4d0e8.firebasestorage.app",
-            messagingSenderId: "537273772839",
-            appId: "1:537273772839:web:ab74ee71d4ab97e9235702",
-            measurementId: "G-JBHXKD4D59"
-        };
+    <!-- Modal (Popup สร้างงาน) -->
+    <div id="taskModal" class="fixed inset-0 bg-gray-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center opacity-0 transition-opacity duration-300">
+        <div class="bg-gray-900 border border-gray-700 rounded-2xl w-full max-w-md p-6 shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white">Create New Task</h3>
+                <button onclick="toggleModal(false)" class="text-gray-400 hover:text-white transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="taskForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Subject</label>
+                    <select id="inputSubject" required class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                        <!-- JS จะเติมรายวิชาที่นี่ -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Task Name</label>
+                    <input type="text" id="inputTask" required placeholder="e.g. Design Document" class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-3 outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Deadline</label>
+                        <input type="date" id="inputDate" required class="w-full bg-gray-800 border border-gray-700 text-gray-300 rounded-lg p-3 outline-none focus:border-indigo-500 transition [color-scheme:dark]">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-400 mb-1">Priority</label>
+                        <select id="inputPriority" class="w-full bg-gray-800 border border-gray-700 text-white rounded-lg p-3 outline-none focus:border-indigo-500 transition">
+                            <option value="Normal">🟢 Normal</option>
+                            <option value="Urgent">🔴 Urgent</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold rounded-lg p-3 mt-4 shadow-lg transition transform hover:-translate-y-0.5">
+                    Save Task
+                </button>
+            </form>
+        </div>
+    </div>
 
-        // 2. เริ่มต้นระบบ Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // 3. ฟังก์ชันบันทึกข้อมูล (Create)
-        document.getElementById('taskForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            const subject = document.getElementById('subject').value;
-            const taskName = document.getElementById('taskName').value;
-            const dueDate = document.getElementById('dueDate').value;
-
-            db.collection("tasks").add({
-                subject: subject,
-                taskName: taskName,
-                dueDate: dueDate,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('taskForm').reset();
-            }).catch((error) => console.error("Error:", error));
-        });
-
-        // 4. ฟังก์ชันดึงข้อมูลแบบ Real-time (Read & Sync)
-        db.collection("tasks").orderBy("dueDate", "asc").onSnapshot((querySnapshot) => {
-            const taskList = document.getElementById('taskList');
-            taskList.innerHTML = ''; // เคลียร์หน้าจอก่อน
-
-            if (querySnapshot.empty) {
-                taskList.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-400">ไม่มีงานค้าง เยี่ยมมาก!</td></tr>';
-                return;
-            }
-
-            querySnapshot.forEach((doc) => {
-                const task = doc.data();
-                taskList.innerHTML += `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-4 font-bold text-slate-800">${task.subject}</td>
-                        <td class="p-4 text-slate-600">${task.taskName}</td>
-                        <td class="p-4 text-slate-600">${task.dueDate}</td>
-                        <td class="p-4 text-center">
-                            <button onclick="deleteTask('${doc.id}')" class="text-red-500 hover:text-red-700 px-3 py-1 rounded bg-red-50 hover:bg-red-100 transition">ลบ</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        });
-
-        // 5. ฟังก์ชันลบข้อมูล (Delete)
-        function deleteTask(id) {
-            if (confirm("แน่ใจหรือไม่ว่างานนี้เสร็จแล้ว/ต้องการลบ?")) {
-                db.collection("tasks").doc(id).delete();
-            }
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
-
 </html>
